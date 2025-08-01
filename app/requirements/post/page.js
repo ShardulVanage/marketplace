@@ -108,7 +108,7 @@ export default function PostRequirementPage() {
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Post Your Requirement</h2>
             <p className="text-gray-600">
-              Describe what you're looking for and let sellers reach out to you with their offerings.
+              Describe what you&apos;re looking for and let sellers reach out to you with their offerings.
             </p>
           </div>
 
