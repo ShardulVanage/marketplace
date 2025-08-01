@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "../../contexts/AuthContext"
 import pb from "../../lib/pocketbase"
-import Navbar from "../../components/common/Navbar"
 
 export default function ProductsPageContent() {
   const router = useRouter()
@@ -16,6 +15,30 @@ export default function ProductsPageContent() {
   const [selectedCategory, setSelectedCategory] = useState("")
   const [error, setError] = useState("")
   const [totalProducts, setTotalProducts] = useState(0)
+
+  const handleProductClick = (productId) => {
+    router.push(`/products/${productId}`)
+  }
+
+  const handleInquiry = (productId, e) => {
+    e.stopPropagation()
+    if (!user) {
+      router.push("/login")
+      return
+    }
+    router.push(`/inquiries/post?product=${productId}`)
+  }
+
+  const clearCategoryFilter = () => {
+    setSelectedCategory("")
+    router.push("/products")
+  }
+
+  const clearAllFilters = () => {
+    setSearchTerm("")
+    setSelectedCategory("")
+    router.push("/products")
+  }
 
   useEffect(() => {
     // Get category from URL params
@@ -81,35 +104,8 @@ export default function ProductsPageContent() {
     }
   }
 
-  const handleProductClick = (productId) => {
-    router.push(`/products/${productId}`)
-  }
-
-  const handleInquiry = (productId, e) => {
-    e.stopPropagation()
-    if (!user) {
-      router.push("/login")
-      return
-    }
-    router.push(`/inquiries/post?product=${productId}`)
-  }
-
-  const clearCategoryFilter = () => {
-    setSelectedCategory("")
-    router.push("/products")
-  }
-
-  const clearAllFilters = () => {
-    setSearchTerm("")
-    setSelectedCategory("")
-    router.push("/products")
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <Navbar />
-
+    <>
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -342,6 +338,6 @@ export default function ProductsPageContent() {
           </div>
         )}
       </div>
-    </div>
+    </>
   )
 }
