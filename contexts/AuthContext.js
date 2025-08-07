@@ -115,9 +115,69 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
+      console.log("👤 Creating user account with data:", {
+        ...userData,
+        password: "[HIDDEN]",
+        passwordConfirm: "[HIDDEN]"
+      })
+
+      // Ensure email is properly set
+      if (!userData.email || !userData.email.trim()) {
+        throw new Error("Email is required")
+      }
+
       const record = await pb.collection("users").create(userData)
+      console.log("✅ User registration successful:", record.email)
+      
       return { success: true, user: record }
     } catch (error) {
+      console.error("❌ Registration error:", error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  const requestOTPForUser = async (email) => {
+    try {
+      console.log("📧 Requesting OTP for existing user:", email)
+      
+      if (!email || !email.trim()) {
+        throw new Error("Email is required")
+      }
+
+      const result = await pb.collection("users").requestOTP(email.trim().toLowerCase())
+      console.log("✅ OTP request successful:", result.otpId)
+      return { success: true, otpId: result.otpId }
+    } catch (error) {
+      console.error("❌ OTP request error:", error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  const verifyOTPForUser = async (otpId, otpCode) => {
+    try {
+      console.log("🔐 Verifying OTP:", otpId)
+      
+      if (!otpId || !otpCode) {
+        throw new Error("OTP ID and code are required")
+      }
+
+      const authData = await pb.collection("users").authWithOTP(otpId, otpCode)
+      console.log("✅ OTP verification successful:", authData.record.email)
+      
+      // Update user's verified status
+      try {
+        await pb.collection("users").update(authData.record.id, { verified: true })
+        console.log("✅ User verified status updated")
+      } catch (updateError) {
+        console.error("❌ Error updating verified status:", updateError)
+      }
+      
+      // Set the authenticated user
+      setUser(authData.record)
+      
+      return { success: true, authData }
+    } catch (error) {
+      console.error("❌ OTP verification error:", error)
       return { success: false, error: error.message }
     }
   }
@@ -141,11 +201,17 @@ export const AuthProvider = ({ children }) => {
     user,
     login,
     register,
+    requestOTPForUser,
+    verifyOTPForUser,
     logout,
     loading,
     isAuthenticated: !!user,
-    isMember: user?.userType === "member",
-    isNonMember: user?.userType === "non_member",
+    isSeller: user?.userRole === "seller",
+    isBuyer: user?.userRole === "buyer",
+    isApproved: user?.profileStatus === "approved",
+    isPending: user?.profileStatus === "pending",
+    isRejected: user?.profileStatus === "rejected",
+    hasMembership: user?.membershipStatus === "active",
   }
 
   // Debug logging
@@ -154,7 +220,9 @@ export const AuthProvider = ({ children }) => {
     loading,
     initialized,
     isAuthenticated: !!user,
-    userType: user?.userType,
+    userRole: user?.userRole,
+    profileStatus: user?.profileStatus,
+    membershipStatus: user?.membershipStatus,
   })
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

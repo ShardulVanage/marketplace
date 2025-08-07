@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
   title: "B2B Marketplace",
-  description: "A comprehensive B2B marketplace for buyers and sellers",
+  description: "Connect businesses worldwide",
 }
 
 export default function RootLayout({ children }) {
